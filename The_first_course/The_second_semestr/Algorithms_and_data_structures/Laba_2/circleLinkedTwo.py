@@ -5,7 +5,8 @@ from linkedTwo import test
 class CircleLinkedTwo(CircleLinkedOne):
     def __init__(self, head: TwoNode):
         super().__init__(head)
-        self.head.prev = head
+        if head:
+            self.head.prev = head
 
     def addNode(self, nodeStart, node):
         super().addNode(nodeStart, node)
@@ -37,7 +38,7 @@ class CircleLinkedTwo(CircleLinkedOne):
 
         cur = self.head
         index = 0
-        ans = "Номер: {}\nЗначение: {}\nprev: {}\nnext: {}\n"
+        ans = "Индекс: {}\nЗначение: {}\nprev: {}\nnext: {}\n"
 
         # Связи головы
         print(ans.format(index, cur.val, cur.prev.val, cur.next.val))
@@ -69,9 +70,25 @@ class CircleLinkedTwo(CircleLinkedOne):
         
         cur.next.prev = cur
 
+    def removeEnd(self):
+        if self.tail:
+
+            if self.tail == self.head:
+                self.tail = self.head = None
+
+            else:
+                new_tail = self.tail.prev
+        
+                new_tail.next = self.head
+                self.head.prev = new_tail
+        
+                self.tail = new_tail
+        else:
+            print("Список пуст")
+
 
 def main():
-    test(CircleLinkedTwo(TwoNode(1)))
+    test(CircleLinkedTwo(TwoNode(1)), "Двусвязный циклический")
 
 if __name__ == "__main__":
     main()

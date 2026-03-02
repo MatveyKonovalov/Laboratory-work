@@ -2,7 +2,6 @@ from Nodes import *
 from linkedOne import *
 from showlst import *
 
-
 class LinkedListTwo(LinkedListOne):
 
     def show(self, delimiter=" <-> "):
@@ -25,8 +24,7 @@ class LinkedListTwo(LinkedListOne):
             return
         
         if cur.next is not None:
-            if cur.next.next is not None:
-                cur.next.next.prev = cur
+            cur.next.prev = cur
 
     
     def addNode(self, nodeStart: TwoNode, nodeNext: TwoNode):
@@ -34,17 +32,22 @@ class LinkedListTwo(LinkedListOne):
         nodeNext.prev = nodeStart
 
     def removeNode(self, node: TwoNode):
+        if node is None:
+            print("Такого узла нет")
+            return None
+        
         if node.prev:
             node.prev.next = node.next
         if node.next:
             node.next.prev = node.prev
         if self.head == node:
             self.head = node.next
+            self.head.prev = None
     
     def showLinks(self):
         cur = self.head
         index = 0
-        ans = "Номер: {}\nЗначение: {}\nprev: {}\nnext: {}\n"
+        ans = "Индекс: {}\nЗначение: {}\nprev: {}\nnext: {}\n"
 
         # Связи головы
         print(ans.format(index, cur.val, None, cur.next.val))
@@ -62,47 +65,11 @@ class LinkedListTwo(LinkedListOne):
 
 
 
-def test(lst = LinkedListTwo(TwoNode(1))):
-
-    for i in range(2, 10):
-        lst.addIndex(TwoNode(i))
-    lst.show()
+def test(lst = LinkedListTwo(TwoNode(1)), name = "Двусвязный список"):
+    testOneLink(lst, name, 2)
+    
+    print("\n\n\nДемонстрация связей: ")
     lst.showLinks()
-    lst.addIndex(TwoNode(90), 1)
-    showsp("Добавление по индексу(val = 90, ind=1): ", lst)
-
-    lst.addIndex(TwoNode(0), 0)
-    showsp("Добавление по индексу(val = 0, ind=0): ", lst)
-
-    lst.removeIndex(0)
-    showsp("Удаление первого: ", lst)
-
-    lst.removeIndex()
-    showsp("Удаление последнего: ", lst)
-
-    lst.removeIndex(1)
-    showsp("Удаление по индексу (1): ", lst)
-
-    lst.removeNode(lst.search(1))
-    showsp("Удаление по узлу(первому): ", lst)
-
-
-    lst.removeNode(lst.search(6))
-    showsp("Удаление по узлу(val=6): ", lst)
-
-
-    lst.addNode(lst.search(2), Node(900))
-    showsp("Добавление узла (2): ", lst)
-
-    lst.addNode(lst.search(5), Node(900))
-    showsp("Добавление узла (5): ", lst)
-
-    lst.addNode(lst.search(8), Node(900))
-    showsp("Добавление узла (8): ", lst)
-
-    # lst.showLinks(lst.head)
-    print(f"2 есть в списке: {lst.search(2) is not None}")
-    print(f"680 есть в списке: {lst.search(680) is not None}")
 
 
 if __name__ == "__main__":

@@ -46,7 +46,9 @@ class LinkedListOne():
         cur = self.head
         if not index or cur.next is None:
             self.head = self.head.next
+            print("Список пуст")
             return None
+        
         curIndex = 0
 
         while curIndex != index - 1:
@@ -58,20 +60,26 @@ class LinkedListOne():
 
         return cur
 
-    # Фича(удаление по узлу)
     def removeNode(self, node: Node|TwoNode):
+        if not node:
+            print("Такого узла нет")
+            return None
+        
         cur = self.head
         if cur == node:
             self.head = cur.next
+            if not self.head:
+                print("Список пуст")
+
             return self.head
         
-        while cur.next is not node and cur.next is not None:
+        while cur.next != node and cur.next is not None:
             cur = cur.next
-        if not cur:
-            print("No found")
+
+        if cur.next == node:
+            cur.next = cur.next.next
         else:
-            if cur.next is not None:
-                cur.next = cur.next.next
+            print("Такого узла нет")
         
         return cur
     
@@ -87,49 +95,76 @@ class LinkedListOne():
         cur = self.head
         while cur is not None and cur.val != val:
             cur = cur.next
-        return cur
+        if cur:
+            return cur
+        else:
+            return None
     
-def testOneLink(lst = LinkedListOne(Node(1))):
-    print("Односвязанный список:")
+    def addInBegin(self, node):
+        self.addIndex(node, 0)
+
+    def addInEnd(self, node):
+        self.addIndex(node)
+        
+    def removeBegin(self):
+        self.removeIndex(0)
+    
+    def removeEnd(self):
+        self.removeIndex()
+
+    
+def testOneLink(lst = LinkedListOne(Node(1)), name = "Односвязный список", typeLst = 1):
+    def convert(val):
+        if typeLst == 1:
+            return Node(val)
+        else:
+            return TwoNode(val)
+        
+
+    print(f"{name}:")
 
     # Заполнение
-    for i in range(2, 10):
-        lst.addIndex(Node(i))
+    for i in range(2, 9):
+        lst.addInEnd(convert(i))
     showsp("Заполненный список: ", lst)
 
 
-    lst.addIndex(Node(0), 0) # Добавление в начало
+    lst.addInBegin(convert(0)) # Добавление в начало
     showsp("Добавление в начало (val = 0): ", lst)
 
-    lst.addIndex(Node(15), 3) # Добавление по индексу
+    lst.addIndex(convert(15), 3) # Добавление по индексу
     showsp("Добавление по индексу (ind=3, val=15): ", lst)
 
-    lst.removeIndex(0) # Удаление первого элемента
+    lst.removeBegin() # Удаление первого элемента
     showsp("Удаление первого элемента: ", lst)
 
-    lst.removeIndex() # Удаление последнего
+    lst.removeEnd() # Удаление последнего
     showsp("Удаление последнего: ", lst)
 
     lst.removeIndex(2) # Удаление по индексу
     showsp("Удаление по индексу (ind=2): ", lst)
 
-    lst.removeNode(lst.search(15))
+    
     showsp("Удаление узла (val = 15): ", lst)
+    lst.removeNode(lst.search(15))
 
     lst.removeNode(lst.search(3))
     showsp("Удаление узла (val = 3): ", lst)
 
-    lst.removeNode(lst.search(8))
-    showsp("Удаление узла (val = 8): ", lst)
+    lst.removeNode(lst.search(7))
+    showsp("Удаление узла (val = 7): ", lst)
 
-    lst.addNode(lst.search(6), Node(900))
-    showsp("Добавление узла (6): ", lst)
+    lst.addNode(lst.search(6), convert(900))
+    showsp("Добавление узла (после 6): ", lst)
 
-    lst.addNode(lst.search(4), Node(900))
-    showsp("Добавление узла (4): ", lst)
+    lst.addNode(lst.search(4), convert(901))
+    showsp("Добавление узла (после 4): ", lst)
 
-    lst.addNode(lst.search(7), Node(900))
-    showsp("Добавление узла (7): ", lst)
+    lst.addNode(lst.search(6), convert(902))
+    showsp("Добавление узла (после 6): ", lst)
+
+    lst.addNode(lst.search(900), convert(903))
+    showsp("Добавление узла (после 900): ", lst)
     
     print(f"3 есть в списке: {lst.search(3) is not None}")
     print(f"999 есть в списке: {lst.search(999) is not None}")

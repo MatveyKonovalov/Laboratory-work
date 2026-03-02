@@ -1,29 +1,38 @@
 from Nodes import *
-from linkedOne import testOneLink
+from linkedOne import testOneLink, LinkedListOne
 from showlst import *
 
-class CircleLinkedOne():
+class CircleLinkedOne(LinkedListOne):
 
 
     def __init__(self, head):
         self.head = head
-        self.head.next = head
+        self.tail = head
+        if head:
+            self.head.next = head
 
     def addIndex(self, node, index=float("inf")):
         cur = self.head
+
         if index == 0:
-            cur = cur.next
-            while cur.next != self.head:
-                cur = cur.next
+            self.tail.next = node
             node.next = self.head
-            cur.next = node
             self.head = node
-            return cur
+
+            # Узел до новой головы
+            return self.tail
         
-        if index == 1:
+        if index == 1 and self.tail != self.head:
+            # Если хвост не совпадает с головой
             node.next = cur.next
             cur.next = node
             return cur
+        
+        elif index == 1:
+            # Если хвост совпадает с головой
+            self.head.next = node
+            node.next = self.head
+            self.tail = node
 
         cur = cur.next
         curIndex = 1
@@ -33,8 +42,10 @@ class CircleLinkedOne():
             curIndex += 1
         
         if cur.next == self.head:
+            # Вставка в конец, меняем хвост
+            self.tail.next = node
             node.next = self.head
-            cur.next = node
+            self.tail = node
         else:
             node.next = cur.next
             cur.next = node
@@ -43,6 +54,9 @@ class CircleLinkedOne():
 
     
     def addNode(self, nodeStart: Node|TwoNode, node: Node|TwoNode):
+        # Если вставляем после хвоста
+        if nodeStart.next == self.head:
+            self.tail = node
         node.next = nodeStart.next
         nodeStart.next = node
 
@@ -52,20 +66,24 @@ class CircleLinkedOne():
 
         if not index:
             cur = cur.next
-            if cur == self.head:
-                cur = None
-                print("List is empty")
+            if self.head == self.tail:
+                # Если хвост совпадает с головой
+ 
+                self.head = self.tail = None
+                print("Список пуст")
                 return None
             
-            while cur.next != self.head:
-                cur = cur.next
-            
-            cur.next = cur.next.next
+            self.tail.next = self.head.next
             self.head = self.head.next
             return cur
         
 
         if index == 1:
+            if self.tail == self.head:
+                self.tail = self.head = None
+                print("Список пуст")
+                return None
+            
             cur.next = cur.next.next
             return cur
         
@@ -78,6 +96,7 @@ class CircleLinkedOne():
         
         if cur.next.next == self.head:
             cur.next = self.head
+            self.tail = cur
 
         else:
             cur.next = cur.next.next
@@ -109,20 +128,20 @@ class CircleLinkedOne():
         # Удаление головного узла
         if node == self.head:
 
-            if cur.next == self.head:
-                self.head = None
-                print("List is empty")
+            if self.tail == self.head:
+                self.tail = self.head = None
+                print("Список пуст")
                 return None
             
-            while cur.next != self.head:
-                cur = cur.next
-
-            self.head = self.head.next
-            cur.next = self.head
-            return cur
+            self.head = self.tail = self.head.next
+            return self.tail
     
         # Удаляем второй узел (после головы)
         if cur.next == node:
+            if self.tail == node:
+                # Если в списке всего 2 элемента
+                self.tail = cur
+
             cur.next = cur.next.next
             return cur
     
@@ -135,6 +154,9 @@ class CircleLinkedOne():
     
         # Нашли узел, который нужно удалить
         if cur.next == node:
+            if self.tail == node:
+                self.tail = cur
+
             cur.next = cur.next.next
         else:
             print("Узел не найден")
@@ -163,8 +185,10 @@ class CircleLinkedOne():
 
 
 
+
+
 def main():
-    testOneLink(CircleLinkedOne(Node(1)))
+    testOneLink(CircleLinkedOne(Node(1)), "Односвязный циклический список")
 
 
 

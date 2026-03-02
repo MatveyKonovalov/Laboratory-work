@@ -14,25 +14,28 @@ def expandList(head: Node, k: int):
     res = None # Ссылка на новую голову
     lastG = None # Указатель на текущий хвост
 
+    # Длина всего списка
+    lenList = 0
+    while cur is not None:
+        lenList += 1
+        cur = cur.next
+
+    cur = head
+
     while cur:
 
         newHead = None # Голова новой группы
         lastL = None # Ссылка на следующую группу для новой группы
 
-        # Проверка, есть ли к узлов для поворота
-        curCheck = cur
-        cntCheck = 0
-        while curCheck is not None and cntCheck < k:
-            cntCheck += 1
-            curCheck = curCheck.next
-        
-        
-        if not curCheck and cntCheck != k:
+        # Проверка, если нет к узлов для поворота
+        if lenList < k:
             if not res:
                 res = head
             else:
                 lastG.next = cur
             return res
+
+        lenList -= k
         
         # Если есть, то делаем поворот
         for _ in range(k):

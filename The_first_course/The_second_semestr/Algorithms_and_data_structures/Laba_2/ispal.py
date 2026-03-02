@@ -1,6 +1,6 @@
 from linkedOne import LinkedListOne
 from Nodes import Node
-from task2 import expandList
+from task2 import expandList, makeList
 
 def is_pal(root: LinkedListOne):
 
@@ -21,6 +21,7 @@ def is_pal(root: LinkedListOne):
     if size % 2 == 1:
         cur = cur.next
 
+    # Переворачиваем вторую половину за O(n)
     med = size // 2
     newHead = expandList(cur, med)
     cur = root.head
@@ -41,11 +42,13 @@ def main():
     root.addIndex(Node(3))
     root.addIndex(Node(2))
     root.addIndex(Node(1))
-    #root.addIndex(Node(1))
 
     root.show()
-    #print(is_pal(root))
-    print(is_pal(root))
+    print(f"Для симметричного: {is_pal(root)}\n\n")
+    
+    root = makeList(6)
+    root.show()
+    print(f"Для не симметричного: {is_pal(root)}")
 
 if __name__ == "__main__":
     main()
