@@ -10,17 +10,17 @@ typedef struct Node2{
     struct Node2 *next;
     struct Node2 *prev;
 
-} tlist2;
+} t_list2;
 
-tlist2* xmalloc2(size_t size){
-    tlist2* cur = malloc(size);
+t_list2* xmalloc2(size_t size){
+    t_list2* cur = malloc(size);
     if (cur == NULL){
         exit(123);
     }
     return cur;
 }
 /*Вывод списка*/
-void printList2(tlist2 *head){
+void printList2(t_list2 *head){
     printf("HEAD -> \n");
     while (!(head == NULL)){
         if (head->prev == NULL){
@@ -51,8 +51,8 @@ void printList2(tlist2 *head){
 }
 
 /*Удаление хвоста*/
-tlist2* del_tail2(tlist2 *head){
-    tlist2 *tmp, *cur = head;
+t_list2* del_tail2(t_list2 *head){
+    t_list2 *tmp, *cur = head;
 
     /*Крайние случаи*/
     if (head == NULL)
@@ -75,7 +75,7 @@ tlist2* del_tail2(tlist2 *head){
 }
 
 /*Удаление по узлу*/
-tlist2* del_ptr2(tlist2 *head, tlist2 *ptr){
+t_list2* del_ptr2(t_list2 *head, t_list2 *ptr){
     if (ptr->prev == NULL){
         if (!(ptr->next == NULL))
             /*Переназначаем следующий, если он существует*/
@@ -94,8 +94,8 @@ tlist2* del_ptr2(tlist2 *head, tlist2 *ptr){
 }
 
 /*Удаление по ключу*/
-tlist2* del_key2(tlist2 *head, int key){
-    tlist2 *cur = head, *tmp;
+t_list2* del_key2(t_list2 *head, int key){
+    t_list2 *cur = head, *tmp;
     /*Крайние случаи*/
     if (head == NULL)
         return NULL;
@@ -122,8 +122,8 @@ tlist2* del_key2(tlist2 *head, int key){
     return head;
 }
 /*Удаление головы*/
-tlist2* del_head2(tlist2 *head){
-    tlist2* tmp = head;
+t_list2* del_head2(t_list2 *head){
+    t_list2* tmp = head;
     if (head == NULL){
         return NULL;
     }
@@ -136,8 +136,8 @@ tlist2* del_head2(tlist2 *head){
     
 }
 /*Создание нового узла*/
-tlist2* create_new_node2(int key, int data){
-    tlist2 *new_node2 = xmalloc2(sizeof(tlist2));
+t_list2* create_new_node2(int key, int data){
+    t_list2 *new_node2 = xmalloc2(sizeof(t_list2));
     new_node2->key = key;
     new_node2->data = data;
 
@@ -148,9 +148,9 @@ tlist2* create_new_node2(int key, int data){
 }
 
 /*Добавление в конец*/
-tlist2* add_in_tail2(tlist2* head, int key, int data){
-    tlist2* new_node2 = create_new_node2(key, data);
-    tlist2 *cur = head;
+t_list2* add_in_tail2(t_list2* head, int key, int data){
+    t_list2* new_node2 = create_new_node2(key, data);
+    t_list2 *cur = head;
 
     if (cur == NULL){
         free(head);
@@ -163,9 +163,9 @@ tlist2* add_in_tail2(tlist2* head, int key, int data){
     new_node2->prev = cur;
     return head;
 }
-tlist2 *add_akey2(tlist2 *head, int key, int data){
-    tlist2 *new_node2 = create_new_node2(key + 1, data);
-    tlist2 *cur = head;
+t_list2 *add_akey2(t_list2 *head, int key, int data){
+    t_list2 *new_node2 = create_new_node2(key + 1, data);
+    t_list2 *cur = head;
 
     while(!(cur == NULL) && !(cur->key == key)){
         cur = cur -> next;
@@ -186,9 +186,9 @@ tlist2 *add_akey2(tlist2 *head, int key, int data){
 }
 
 /*Добавление до какого-то ключа*/
-tlist2 *add_bkey2(tlist2 *head, int key, int data){
-    tlist2 *new_node2 = create_new_node2(key, data);
-    tlist2 *cur = head;
+t_list2 *add_bkey2(t_list2 *head, int key, int data){
+    t_list2 *new_node2 = create_new_node2(key, data);
+    t_list2 *cur = head;
 
     if (cur == NULL)
         return NULL;
@@ -212,7 +212,7 @@ tlist2 *add_bkey2(tlist2 *head, int key, int data){
 }
 
 /*Поиск узла по ключу*/
-tlist2* search_by_key2(tlist2* head, int key){
+t_list2* search_by_key2(t_list2* head, int key){
     while(head != NULL){
         if (head->key == key){
             return head;

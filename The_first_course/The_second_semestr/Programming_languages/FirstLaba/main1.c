@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include "tlist1.h"
-#include "tlist2.h"
+#include "t_list1.h"
+#include "t_list2.h"
 
 int main(){
     int i;
-    tlist1 *head = NULL, *cur;
-    tlist2* head2 = NULL, *cur2;
+    t_list1 *head = NULL, *cur;
+    t_list2* head2 = NULL, *cur2;
     head = add_in_tail(head, -1, -10);
     printf("Односвязный список\n\n");
 
