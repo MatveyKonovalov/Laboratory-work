@@ -227,8 +227,8 @@ t_list2* add_bkey2(t_list2 *head, int key, int data) {
     t_list2 *cur = head;
     
     if (head == NULL) {
-        free(new_node);
-        return NULL;
+        head = new_node;
+        return head;
     }
     
     if (head->key == key) {
