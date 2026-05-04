@@ -8,17 +8,14 @@
 #define s 5
 #endif
 
-// Стек для вычислений RPN
 double *bp = NULL;
 int sp = 0;
 int capacity = 0;
 
-// Стек для операторов при переводе в RPN
 char *op_stack = NULL;
 int op_sp = 0;
 int op_capacity = 0;
 
-// Функции для стека вычислений
 void init_stack(int initial_capacity)
 {
     capacity = initial_capacity;
@@ -82,7 +79,6 @@ void prbp()
     printf("  -----\n");
 }
 
-// Функции для стека операторов
 void init_op_stack(int initial_capacity)
 {
     op_capacity = initial_capacity;
@@ -138,8 +134,7 @@ int is_empty_op()
 {
     return op_sp == 0;
 }
-// ===================================================================================
-// Приоритет операторов
+/*                                              */
 int precedence(char op)
 {
     switch (op)
@@ -157,22 +152,18 @@ int precedence(char op)
     }
 }
 
-// Проверка, является ли символ оператором
 int is_operator(char c)
 {
     return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
 }
 
 
-// =====================================================================================
-// Проверка, является ли оператор левоассоциативным
 int is_left_associative(char op)
 {
-    // Все операторы кроме '^' левоассоциативные
+
     return op != '^';
 }
 
-// Преобразование инфиксного выражения в постфиксное (RPN)
 void infix_to_rpn(const char *infix, char *rpn)
 {
     int i, j = 0;
@@ -185,11 +176,11 @@ void infix_to_rpn(const char *infix, char *rpn)
     {
         c = infix[i];
         
-        // Пропускаем пробелы
+        
         if (isspace(c))
             continue;
         
-        // Если число или десятичная точка
+    
         if (isdigit(c) || c == '.')
         {
             while (i < len && (isdigit(infix[i]) || infix[i] == '.'))
@@ -197,14 +188,14 @@ void infix_to_rpn(const char *infix, char *rpn)
                 rpn[j++] = infix[i++];
             }
             rpn[j++] = ' ';
-            i--; // Компенсируем лишнее увеличение i
+            i--; 
         }
-        // Если открывающая скобка
+        
         else if (c == '(')
         {
             push_op(c);
         }
-        // Если закрывающая скобка
+       
         else if (c == ')')
         {
             while (!is_empty_op() && top_op() != '(')
@@ -213,12 +204,12 @@ void infix_to_rpn(const char *infix, char *rpn)
                 rpn[j++] = ' ';
             }
             if (!is_empty_op() && top_op() == '(')
-                pop_op(); // Удаляем '('
+                pop_op(); 
         }
-        // Если оператор
+        
         else if (is_operator(c))
         {
-            // Для правоассоциативного ^ используем другое условие
+            
             while (!is_empty_op() && top_op() != '(' &&
                    (precedence(top_op()) > precedence(c) ||
                     (precedence(top_op()) == precedence(c) && is_left_associative(c))))
@@ -235,7 +226,6 @@ void infix_to_rpn(const char *infix, char *rpn)
         }
     }
     
-    // Выгружаем оставшиеся операторы
     while (!is_empty_op())
     {
         rpn[j++] = pop_op();
@@ -250,7 +240,6 @@ void infix_to_rpn(const char *infix, char *rpn)
     op_capacity = 0;
 }
 
-// Вычисление RPN выражения
 double evaluate_rpn(const char *rpn)
 {
     int i;
@@ -265,7 +254,7 @@ double evaluate_rpn(const char *rpn)
             if (token_index > 0)
             {
                 token[token_index] = '\0';
-                // Проверяем, является ли токен числом
+            
                 if (isdigit(token[0]) || (token[0] == '-' && token_index > 1))
                 {
                     push(atof(token));
@@ -311,7 +300,6 @@ double evaluate_rpn(const char *rpn)
     return pop();
 }
 
-// Интерактивный калькулятор RPN (старый режим)
 void rpn_calculator()
 {
     char c;
@@ -427,7 +415,6 @@ void rpn_calculator()
             
         default:
             printf("Input error: unknown character '%c'\n", c);
-            // Очищаем ввод до конца строки
             while ((c = getc(stdin)) != '\n' && c != EOF);
             break;
         }
@@ -457,27 +444,27 @@ int main()
         printf("Invalid input\n");
         return 1;
     }
-    clear_input_buffer(); // Очищаем буфер после scanf
+    clear_input_buffer(); 
     
     if (choice == 1)
     {
         printf("Enter infix expression (e.g., 3+4*2/(1-5)^2^3): ");
         fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = '\0'; // Удаляем символ новой строки
+        input[strcspn(input, "\n")] = '\0'; 
         
         printf("\nInfix: %s\n", input);
         
-        // Конвертируем в RPN
+        
         infix_to_rpn(input, rpn);
         printf("RPN: %s\n", rpn);
         
-        // Инициализируем стек вычислений
+      
         init_stack(s);
         
-        // Вычисляем результат
+        
         result = evaluate_rpn(rpn);
         
-        // Выводим результат
+        
         if (result == (int)result)
             printf("Result = %d\n", (int)result);
         else
