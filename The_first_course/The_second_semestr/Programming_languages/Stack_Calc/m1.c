@@ -138,7 +138,7 @@ int is_empty_op()
 {
     return op_sp == 0;
 }
-
+// ===================================================================================
 // Приоритет операторов
 int precedence(char op)
 {
@@ -161,6 +161,15 @@ int precedence(char op)
 int is_operator(char c)
 {
     return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
+}
+
+
+// =====================================================================================
+// Проверка, является ли оператор левоассоциативным
+int is_left_associative(char op)
+{
+    // Все операторы кроме '^' левоассоциативные
+    return op != '^';
 }
 
 // Преобразование инфиксного выражения в постфиксное (RPN)
@@ -209,8 +218,10 @@ void infix_to_rpn(const char *infix, char *rpn)
         // Если оператор
         else if (is_operator(c))
         {
+            // Для правоассоциативного ^ используем другое условие
             while (!is_empty_op() && top_op() != '(' &&
-                   precedence(top_op()) >= precedence(c))
+                   (precedence(top_op()) > precedence(c) ||
+                    (precedence(top_op()) == precedence(c) && is_left_associative(c))))
             {
                 rpn[j++] = pop_op();
                 rpn[j++] = ' ';
@@ -305,8 +316,17 @@ void rpn_calculator()
 {
     char c;
     
-    while ((c = getc(stdin)) != EOF)
+    printf("RPN Calculator Mode\n");
+    printf("Enter numbers and operators (e.g., 5 3 + =)\n");
+    printf("Press Ctrl+D (Linux/Mac) or Ctrl+Z (Windows) to exit\n\n");
+    
+    while (1)
     {
+        c = getc(stdin);
+        
+        if (c == EOF)
+            break;
+            
         switch (c)
         {
         case '0':
@@ -407,9 +427,17 @@ void rpn_calculator()
             
         default:
             printf("Input error: unknown character '%c'\n", c);
-            return;
+            // Очищаем ввод до конца строки
+            while ((c = getc(stdin)) != '\n' && c != EOF);
+            break;
         }
     }
+}
+
+void clear_input_buffer()
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
 int main()
@@ -423,12 +451,17 @@ int main()
     printf("1. Convert infix to RPN and evaluate\n");
     printf("2. RPN calculator (direct mode)\n");
     printf("Choose mode (1 or 2): ");
-    scanf("%d", &choice);
-    getchar(); // Убираем символ новой строки
+    
+    if (scanf("%d", &choice) != 1)
+    {
+        printf("Invalid input\n");
+        return 1;
+    }
+    clear_input_buffer(); // Очищаем буфер после scanf
     
     if (choice == 1)
     {
-        printf("Enter infix expression (e.g., 3+4*2/(1-5)^2): ");
+        printf("Enter infix expression (e.g., 3+4*2/(1-5)^2^3): ");
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = '\0'; // Удаляем символ новой строки
         
@@ -454,10 +487,6 @@ int main()
     }
     else if (choice == 2)
     {
-        printf("RPN Calculator Mode\n");
-        printf("Enter numbers and operators (e.g., 5 3 + =)\n");
-        printf("Press Ctrl+D (Linux/Mac) or Ctrl+Z (Windows) to exit\n\n");
-        
         init_stack(s);
         rpn_calculator();
         free(bp);
