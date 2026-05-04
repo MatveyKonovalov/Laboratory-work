@@ -71,7 +71,7 @@ void clear_stack() {
 }
 
 // ============================================================
-//  ОТОБРАЖЕНИЕ СТЕКА
+//  ОТОБРАЖЕНИЕ СТЕКА (прежний стиль)
 // ============================================================
 
 void print_stack() {
@@ -85,6 +85,125 @@ void print_stack() {
     printf("]\n");
 }
 
+// ============================================================
+//  ПАРСИНГ ЧИСЕЛ В РАЗНЫХ СИСТЕМАХ СЧИСЛЕНИЯ
+// ============================================================
+
+// Проверка префикса системы счисления
+int get_base_from_prefix(const char* str, int* start_pos) {
+    if (str[0] == '0') {
+        if (str[1] == 'b' || str[1] == 'B') {  // 0b1010 - двоичная
+            *start_pos = 2;
+            return 2;
+        }
+        else if (str[1] == 'o' || str[1] == 'O') {  // 0o17 - восьмеричная
+            *start_pos = 2;
+            return 8;
+        }
+        else if (str[1] == 'x' || str[1] == 'X') {  // 0x1F - шестнадцатеричная
+            *start_pos = 2;
+            return 16;
+        }
+        else if (isdigit(str[1])) {  // 017 - восьмеричная (традиционная)
+            *start_pos = 0;
+            return 8;
+        }
+    }
+    *start_pos = 0;
+    return 10;  // десятичная по умолчанию
+}
+
+// Преобразование символа в цифру (для систем до 16)
+int char_to_digit(char c) {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
+    if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
+    return -1;
+}
+
+// Парсинг числа с учетом системы счисления
+double parse_number(const char* str) {
+    int start;
+    int base = get_base_from_prefix(str, &start);
+    
+    // Пропускаем пробелы
+    while (isspace(str[start])) start++;
+    
+    // Проверка на отрицательное число
+    int sign = 1;
+    if (str[start] == '-') {
+        sign = -1;
+        start++;
+    }
+    
+    // Парсинг целой части
+    double result = 0.0;
+    int has_digits = 0;
+    
+    for (int i = start; str[i] != '\0'; i++) {
+        int digit = char_to_digit(str[i]);
+        if (digit >= 0 && digit < base) {
+            result = result * base + digit;
+            has_digits = 1;
+        } else if (str[i] == '.') {
+            // Дробная часть (только для десятичной системы)
+            if (base != 10) {
+                printf("Предупреждение: дробные части поддерживаются только для десятичной системы\n");
+                break;
+            }
+            double frac = 0.0;
+            double divisor = 1.0;
+            i++;
+            for (int j = i; str[j] != '\0'; j++) {
+                if (isdigit(str[j])) {
+                    frac = frac * 10 + (str[j] - '0');
+                    divisor *= 10;
+                } else {
+                    break;
+                }
+            }
+            result += frac / divisor;
+            break;
+        } else {
+            break;
+        }
+    }
+    
+    if (!has_digits) {
+        printf("Ошибка: некорректное число '%s'\n", str);
+        return 0;
+    }
+    
+    return sign * result;
+}
+
+// ============================================================
+//  ВЫВОД ЧИСЛА В РАЗНЫХ СИСТЕМАХ СЧИСЛЕНИЯ
+// ============================================================
+
+void print_number(double value, int base) {
+    int int_part = (int)value;
+    
+    if (base == 2) {
+        printf("0b");
+        // Рекурсивная функция для вывода в двоичной системе
+        void print_binary(int n) {
+            if (n > 1) print_binary(n / 2);
+            printf("%d", n % 2);
+        }
+        if (int_part == 0) printf("0");
+        else print_binary(int_part);
+    } 
+    else if (base == 8) {
+        printf("0o%o", int_part);
+    }
+    else if (base == 16) {
+        printf("0x%X", int_part);
+    }
+    else {
+        printf("%d", int_part);
+    }
+}
 // ============================================================
 //  СТРУКТУРА ДЛЯ ОПЕРАТОРОВ (приоритеты и ассоциативность)
 // ============================================================
@@ -140,23 +259,23 @@ int is_function(char c) {
 double apply_operator(char op, double a, double b) {
     switch (op) {
         case '+': 
-            printf("    %.4f + %.4f = %.4f\n", a, b, a + b);
+            printf("  → %.2f + %.2f = %.4f\n", a, b, a + b);
             return a + b;
         case '-': 
-            printf("    %.4f - %.4f = %.4f\n", a, b, a - b);
+            printf("  → %.2f - %.2f = %.4f\n", a, b, a - b);
             return a - b;
         case '*': 
-            printf("    %.4f * %.4f = %.4f\n", a, b, a * b);
+            printf("  → %.2f * %.2f = %.4f\n", a, b, a * b);
             return a * b;
         case '/': 
             if (b == 0) {
                 printf("Ошибка: деление на ноль!\n");
                 return 0;
             }
-            printf("    %.4f / %.4f = %.4f\n", a, b, a / b);
+            printf("  → %.2f / %.2f = %.4f\n", a, b, a / b);
             return a / b;
         case '^': 
-            printf("    %.4f ^ %.4f = %.4f\n", a, b, pow(a, b));
+            printf("  → %.2f ^ %.2f = %.4f\n", a, b, pow(a, b));
             return pow(a, b);
         default: return 0;
     }
@@ -165,34 +284,34 @@ double apply_operator(char op, double a, double b) {
 double apply_function(char func, double a) {
     switch (func) {
         case 's':  // sin
-            printf("    sin(%.4f) = %.4f\n", a, sin(a));
+            printf("  → sin(%.4f) = %.4f\n", a, sin(a));
             return sin(a);
         case 'c':  // cos
-            printf("    cos(%.4f) = %.4f\n", a, cos(a));
+            printf("  → cos(%.4f) = %.4f\n", a, cos(a));
             return cos(a);
         case 't':  // tan
-            printf("    tan(%.4f) = %.4f\n", a, tan(a));
+            printf("  → tan(%.4f) = %.4f\n", a, tan(a));
             return tan(a);
         case 'q':  // sqrt
             if (a < 0) {
                 printf("Ошибка: квадратный корень из отрицательного числа!\n");
                 return 0;
             }
-            printf("    sqrt(%.4f) = %.4f\n", a, sqrt(a));
+            printf("  → sqrt(%.4f) = %.4f\n", a, sqrt(a));
             return sqrt(a);
         case 'l':  // ln (натуральный логарифм)
             if (a <= 0) {
                 printf("Ошибка: логарифм от неположительного числа!\n");
                 return 0;
             }
-            printf("    ln(%.4f) = %.4f\n", a, log(a));
+            printf("  → ln(%.4f) = %.4f\n", a, log(a));
             return log(a);
         case 'g':  // log10
             if (a <= 0) {
                 printf("Ошибка: логарифм от неположительного числа!\n");
                 return 0;
             }
-            printf("    log10(%.4f) = %.4f\n", a, log10(a));
+            printf("  → log10(%.4f) = %.4f\n", a, log10(a));
             return log10(a);
         default: return 0;
     }
@@ -224,8 +343,9 @@ char* infix_to_rpn(const char* expr) {
             char num[64];
             int num_pos = 0;
             
-            // Собираем число
-            while (i < len && (isdigit(expr[i]) || expr[i] == '.')) {
+            // Собираем число вместе с префиксом системы счисления
+            while (i < len && (isalnum(expr[i]) || expr[i] == '.' || expr[i] == 'b' || expr[i] == 'B' || 
+                   expr[i] == 'o' || expr[i] == 'O' || expr[i] == 'x' || expr[i] == 'X')) {
                 num[num_pos++] = expr[i++];
             }
             num[num_pos] = '\0';
@@ -252,7 +372,6 @@ char* infix_to_rpn(const char* expr) {
         // Унарный минус
         if (c == '-' && (i == 0 || expr[i-1] == '(' || is_operator(expr[i-1]))) {
             out_pos += sprintf(output + out_pos, "0 ");
-            // Продолжаем обработку минуса как бинарного оператора
         }
         
         // Функции
@@ -374,10 +493,15 @@ double evaluate_rpn(const char* rpn) {
                 token[token_pos] = '\0';
                 token_pos = 0;
                 
-                // Число
-                if (isdigit(token[0]) || token[0] == '.') {
-                    push(atof(token));
-                    printf("  + push %.4f\n", atof(token));
+                // Число (с поддержкой разных систем счисления)
+                if (isdigit(token[0]) || token[0] == '.' || token[0] == '0') {
+                    double val = parse_number(token);
+                    push(val);
+                    printf("  + push ");
+                    if (val == (int)val)
+                        printf("%d\n", (int)val);
+                    else
+                        printf("%.4f\n", val);
                 }
                 // Оператор или функция
                 else if (strlen(token) == 1) {
@@ -414,7 +538,7 @@ double evaluate_rpn(const char* rpn) {
 }
 
 // ============================================================
-//  ФУНКЦИЯ ДЛЯ ПОСТРОЧНОГО ВВОДА 
+//  ФУНКЦИЯ ДЛЯ ПОСТРОЧНОГО ВВОДА
 // ============================================================
 
 void process_line(const char* line) {
@@ -450,7 +574,22 @@ void process_line(const char* line) {
             double result = evaluate_rpn(rpn);
             
             printf("\n========================================\n");
-            printf("РЕЗУЛЬТАТ: %.6f\n", result);
+            printf("РЕЗУЛЬТАТ: ");
+            if (result == (int)result)
+                printf("%d", (int)result);
+            else
+                printf("%.6f", result);
+            
+            // Дополнительный вывод в разных системах счисления
+            printf("\n\nВ разных системах счисления:\n");
+            printf("  Десятичная:     %d\n", (int)result);
+            printf("  Двоичная:       ");
+            print_number(result, 2);
+            printf("\n  Восьмеричная:    ");
+            print_number(result, 8);
+            printf("\n  Шестнадцатеричная: ");
+            print_number(result, 16);
+            printf("\n");
             printf("========================================\n");
             print_stack();
         }
@@ -465,7 +604,12 @@ void process_line(const char* line) {
         printf("\nRPN: %s\n", rpn);
         double result = evaluate_rpn(rpn);
         
-        printf("\nРЕЗУЛЬТАТ: %.6f\n", result);
+        printf("\nРЕЗУЛЬТАТ: ");
+        if (result == (int)result)
+            printf("%d", (int)result);
+        else
+            printf("%.6f", result);
+        printf("\n");
         print_stack();
     }
 }
@@ -480,17 +624,23 @@ int main() {
     
     printf("============================================\n");
     printf("    КАЛЬКУЛЯТОР С ПОДДЕРЖКОЙ СКОБОК\n");
+    printf("      и разных систем счисления\n");
     printf("============================================\n");
     printf("Функции: +, -, *, /, ^ (степень), sin, cos, tan\n");
     printf("         sqrt, ln, log, pi, e, скобки ()\n");
+    printf("\nСистемы счисления:\n");
+    printf("  Двоичная:      0b1010 (10 в десятичной)\n");
+    printf("  Восьмеричная:  0o17 или 017 (15 в десятичной)\n");
+    printf("  Десятичная:    42 (по умолчанию)\n");
+    printf("  Шестнадцатеричная: 0x1F (31 в десятичной)\n");
     printf("\nСпособы ввода:\n");
-    printf("  1. 2 + 3 * 4 =     → автоматическое вычисление\n");
-    printf("  2. 2 3 4 * +       → прямой RPN (без '=')\n");
-    printf("  3. (2+3)*4 =       → со скобками и '='\n");
+    printf("  1. 2 + 3 * 4 =        → автоматическое вычисление\n");
+    printf("  2. 0b1010 + 0xFF =    → смешанные системы\n");
+    printf("  3. (2+3)*4 =          → со скобками\n");
     printf("\nКоманды:\n");
-    printf("  clear, c           → очистить стек\n");
-    printf("  stack, s           → показать стек\n");
-    printf("  q, quit            → выход\n");
+    printf("  clear, c  → очистить стек\n");
+    printf("  stack, s  → показать стек\n");
+    printf("  q, quit   → выход\n");
     printf("============================================\n\n");
     
     while (1) {
