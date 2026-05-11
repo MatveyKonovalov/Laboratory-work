@@ -42,7 +42,6 @@ void resize_stack()
     }
     bp = new_bp;
     capacity = new_capacity;
-    printf("Stack resized: %d -> %d\n", capacity / 2, capacity);
 }
 
 void check_stack()
@@ -63,23 +62,6 @@ double pop()
         return bp[--sp];
     printf("Error: Stack underflow\n");
     return 0;
-}
-
-void prbp()
-{
-    printf("  _____\n");
-    for (int i = 0; i < sp; i++)
-    {
-        if (fabs(bp[i] - (int)bp[i]) < 1e-10)
-        {
-            printf("%d [%4d]\n", i, (int)bp[i]);
-        }
-        else
-        {
-            printf("%d [%8.4f]\n", i, bp[i]);
-        }
-    }
-    printf("  -----\n");
 }
 
 // Функции для стека операторов
@@ -139,7 +121,6 @@ int is_empty_op()
     return op_sp == 0;
 }
 
-// ===================================================================================
 // Приоритет операторов
 int precedence(char op)
 {
@@ -164,15 +145,6 @@ int precedence(char op)
 int is_operator(char c)
 {
     return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
-}
-
-// Проверка, является ли оператор левоассоциативным
-int is_left_associative(char op)
-{
-    // Все операторы кроме '^' и унарного минуса левоассоциативные
-    if (op == '^' || op == 'u')
-        return 0;
-    return 1;
 }
 
 // Проверка, является ли минус унарным
@@ -236,7 +208,7 @@ void infix_to_rpn(const char *infix, char *rpn)
                 rpn[j++] = ' ';
             }
             if (!is_empty_op() && top_op() == '(')
-                pop_op(); // Удаляем '('
+                pop_op();
         }
         // Если оператор
         else if (is_operator(c))
@@ -246,8 +218,7 @@ void infix_to_rpn(const char *infix, char *rpn)
             {
                 // Обрабатываем унарный минус как специальный оператор 'u'
                 while (!is_empty_op() && top_op() != '(' &&
-                       (precedence(top_op()) > precedence('u') ||
-                        (precedence(top_op()) == precedence('u') && is_left_associative('u'))))
+                       precedence(top_op()) > precedence('u'))
                 {
                     rpn[j++] = pop_op();
                     rpn[j++] = ' ';
@@ -258,19 +229,13 @@ void infix_to_rpn(const char *infix, char *rpn)
             {
                 // Обычный бинарный оператор
                 while (!is_empty_op() && top_op() != '(' &&
-                       (precedence(top_op()) > precedence(c) ||
-                        (precedence(top_op()) == precedence(c) && is_left_associative(c))))
+                       precedence(top_op()) >= precedence(c))
                 {
                     rpn[j++] = pop_op();
                     rpn[j++] = ' ';
                 }
                 push_op(c);
             }
-        }
-        else
-        {
-            printf("Error: Invalid character '%c' in expression\n", c);
-            return;
         }
     }
     
@@ -289,7 +254,7 @@ void infix_to_rpn(const char *infix, char *rpn)
     op_capacity = 0;
 }
 
-// Вычисление RPN выражения (поддержка унарного минуса)
+// Вычисление RPN выражения с поддержкой унарного минуса
 double evaluate_rpn(const char *rpn)
 {
     int i;
@@ -304,7 +269,8 @@ double evaluate_rpn(const char *rpn)
             if (token_index > 0)
             {
                 token[token_index] = '\0';
-                // Проверяем, является ли токен числом
+                
+                // Проверяем, является ли токен числом (включая отрицательные числа)
                 if (isdigit(token[0]) || (token[0] == '-' && token_index > 1) || token[0] == '.')
                 {
                     push(atof(token));
@@ -355,196 +321,27 @@ double evaluate_rpn(const char *rpn)
     return pop();
 }
 
-// Интерактивный калькулятор RPN (поддержка унарного минуса)
-void rpn_calculator()
-{
-    char c;
-    double num;
-    int is_unary = 0;
-    
-    printf("RPN Calculator Mode (supports real numbers and unary minus)\n");
-    printf("Enter numbers and operators (e.g., 5 3 + = or -5 2 + =)\n");
-    printf("Press Ctrl+D (Linux/Mac) or Ctrl+Z (Windows) to exit\n\n");
-    
-    while (1)
-    {
-        c = getc(stdin);
-        
-        if (c == EOF)
-            break;
-            
-        switch (c)
-        {
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-        case '.':
-            ungetc(c, stdin);
-            check_stack();
-            fscanf(stdin, "%lf", &bp[sp]);
-            ++sp;
-            prbp();
-            break;
-            
-        case '+':
-            if (sp < 2)
-            {
-                printf("Error: Not enough operands for +\n");
-                break;
-            }
-            bp[sp-2] += bp[sp-1];
-            --sp;
-            prbp();
-            break;
-            
-        case '-':
-            // В RPN режиме '-' всегда бинарный, так как унарный минус - это отдельное число
-            if (sp < 2)
-            {
-                printf("Error: Not enough operands for -\n");
-                break;
-            }
-            bp[sp-2] -= bp[sp-1];
-            --sp;
-            prbp();
-            break;
-            
-        case '*':
-            if (sp < 2)
-            {
-                printf("Error: Not enough operands for *\n");
-                break;
-            }
-            bp[sp-2] *= bp[sp-1];
-            --sp;
-            prbp();
-            break;
-            
-        case '/':
-            if (sp < 2)
-            {
-                printf("Error: Not enough operands for /\n");
-                break;
-            }
-            if (fabs(bp[sp-1]) < 1e-12)
-            {
-                printf("Error: Division by zero\n");
-                break;
-            }
-            bp[sp-2] /= bp[sp-1];
-            --sp;
-            prbp();
-            break;
-            
-        case '^':
-            if (sp < 2)
-            {
-                printf("Error: Not enough operands for ^\n");
-                break;
-            }
-            bp[sp-2] = pow(bp[sp-2], bp[sp-1]);
-            --sp;
-            prbp();
-            break;
-            
-        case '=':
-            if (sp < 1)
-            {
-                printf("Error: Stack is empty\n");
-                break;
-            }
-            if (fabs(bp[sp-1] - (int)bp[sp-1]) < 1e-10)
-                printf("Result = %d\n", (int)bp[sp-1]);
-            else
-                printf("Result = %.8f\n", bp[sp-1]);
-            --sp;
-            prbp();
-            break;
-            
-        case ' ':
-        case '\t':
-        case '\n':
-            break;
-            
-        default:
-            printf("Input error: unknown character '%c'\n", c);
-            // Очищаем ввод до конца строки
-            while ((c = getc(stdin)) != '\n' && c != EOF);
-            break;
-        }
-    }
-}
-
-void clear_input_buffer()
-{
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
 int main()
 {
     char input[1000];
     char rpn[1000];
     double result;
-    int choice;
     
-    printf("=== RPN Calculator & Compiler (Unary Minus Support) ===\n");
-    printf("1. Convert infix to RPN and evaluate\n");
-    printf("2. RPN calculator (direct mode)\n");
-    printf("Choose mode (1 or 2): ");
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = '\0';
     
-    if (scanf("%d", &choice) != 1)
-    {
-        printf("Invalid input\n");
-        return 1;
-    }
-    clear_input_buffer(); // Очищаем буфер после scanf
+    // Конвертируем в RPN
+    infix_to_rpn(input, rpn);
     
-    if (choice == 1)
-    {
-        printf("Enter infix expression (supports unary minus, e.g., -3.5+4*2/(1-5)^2^3): ");
-        fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = '\0'; // Удаляем символ новой строки
-        
-        printf("\nInfix: %s\n", input);
-        
-        // Конвертируем в RPN
-        infix_to_rpn(input, rpn);
-        printf("RPN: %s\n", rpn);
-        
-        // Инициализируем стек вычислений
-        init_stack(s);
-        
-        // Вычисляем результат
-        result = evaluate_rpn(rpn);
-        
-        // Выводим результат
-        if (fabs(result - (int)result) < 1e-10)
-            printf("Result = %d\n", (int)result);
-        else
-            printf("Result = %.8f\n", result);
-        
-        free(bp);
-    }
-    else if (choice == 2)
-    {
-        init_stack(s);
-        rpn_calculator();
-        free(bp);
-    }
-    else
-    {
-        printf("Invalid choice\n");
-        return 1;
-    }
+    // Инициализируем стек вычислений
+    init_stack(s);
     
-    printf("\nExit\n");
+    // Вычисляем результат
+    result = evaluate_rpn(rpn);
+    
+    printf("%.6f\n", result);
+    
+    free(bp);
+    
     return 0;
 }
