@@ -106,10 +106,9 @@ class StackNode():
             # Уже используется - ничего не делаем
             pass
         elif in_no_use:
-            # ✅ Переносим из no_uses в uses и обновляем флаг
             self.no_uses_var.delete(name_var)
             self.uses_var.add(name_var, in_no_use)
-            in_no_use.used = True  # ✅ Важно: обновляем флаг в Record
+            in_no_use.used = True  
 
     def get_no_use_in(self) -> list[Record]:
         return self.no_uses_var.get_all()

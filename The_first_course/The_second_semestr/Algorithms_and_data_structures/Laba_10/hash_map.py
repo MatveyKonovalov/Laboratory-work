@@ -32,14 +32,18 @@ class Stack:
     
     def __len__(self):
         return len(self.__stack)
+    
+    def __iter__(self):
+        for scope in range(len(self.__stack) - 1, -1, -1):
+            yield self.__stack[scope]
 
 
 class Table:
     def __init__(self, size: int = 16):
         if size <= 0:
             raise ValueError("Incorrect size: size must >= 0")
-        self.__buckets = [None] * size
-        self.capacity = 0
+        self.__buckets = [None] * size # Бакеты: ключ - имя области, значение StackNode
+        self.capacity = 0 # Заполняемость
         self.scope_stack = Stack()  # Стек областей
 
     def __hash_func(self, key: str) -> int:
@@ -47,6 +51,7 @@ class Table:
 
     def change_capacity(self):
         self.capacity += 1
+        # Обновление размера таблицы при выскокой заполняемости
         if (self.capacity / len(self.__buckets)) > 0.7:
             self.__update_size()
 
@@ -108,7 +113,7 @@ class Table:
 
     # Поиск с учётом вложенности (от текущей к глобальной)
     def find_recursive(self, name_var: str) -> Record:
-        for scope in reversed(self.scope_stack.get_all()):
+        for scope in self.scope_stack:
             record = self.find(scope, name_var)
             if record:
                 return record
@@ -171,11 +176,11 @@ class Table:
         self.capacity = new_table.capacity
         self.scope_stack = new_table.scope_stack
 
-    # Добавлен метод __len__
+
     def __len__(self) -> int:
         return self.capacity
     
-    # Добавлен метод get_stats для отладки
+    
     def get_stats(self):
         return {
             'buckets': len(self.__buckets),

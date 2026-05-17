@@ -4,25 +4,20 @@ from record import Record
 
 
 class TestSymbolTable:
-    """Набор тестов для таблицы символов (вариант 30)"""
-    
+
     @pytest.fixture
     def table(self):
-        """Фикстура: создаёт новую таблицу символов"""
         return Table(128)
     
     @pytest.fixture
     def prepared_table(self):
-        """Фикстура: таблица с предварительно добавленными данными"""
         st = Table(128)
         
-        # Глобальная область
         st.enter_scope("global")
         st.add("global", Record("globalVar1", "int", 10, "global", False, False, 0, ""), False)
         st.add("global", Record("globalVar2", "bool", 11, "global", False, False, 0, ""), False)
         st.add("global", Record("unusedGlobal", "int", 24, "global", False, False, 0, ""), False)
         
-        # Область функции
         st.enter_scope("function_calculate")
         st.add("function_calculate", Record("a", "int", 4, "function_calculate", False, False, 0, ""), False)
         st.add("function_calculate", Record("b", "int", 4, "function_calculate", False, False, 0, ""), False)
@@ -30,16 +25,13 @@ class TestSymbolTable:
         st.add("function_calculate", Record("temp", "int", 6, "function_calculate", False, False, 0, ""), False)
         st.add("function_calculate", Record("x", "float", 14, "function_calculate", False, False, 0, ""), False)
         
-        # Область блока
         st.enter_scope("block_if")
         st.add("block_if", Record("localVar", "int", 10, "block_if", False, False, 0, ""), False)
         
         return st
     
-    # ========== 1. ТЕСТЫ ДОБАВЛЕНИЯ ==========
     
     def test_add_single_variable(self, table):
-        """Тест добавления одной переменной"""
         table.enter_scope("global")
         result = table.add("global", Record("x", "int", 10, "global", False, False, 0, ""), False)
         
